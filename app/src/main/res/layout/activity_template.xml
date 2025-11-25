@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"> <!-- 垂直方向布局是关键 -->
+
+    <!-- 模板页主体内容：设置权重1，占据导航栏上方的所有剩余空间 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+    android:layout_weight="1"
+    android:layout_gravity="center"
+    android:text="待开发，敬请期待"
+    android:textSize="20sp"/>
+
+    <!-- 底部导航栏：固定在屏幕底部，和其他页面一致 -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/menu_bottom"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color"
+        android:background="#FFFFFF"/>
+
+</LinearLayout>

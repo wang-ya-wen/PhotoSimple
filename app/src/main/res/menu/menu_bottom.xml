@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_edit"
+        android:title="修图"
+        android:icon="@drawable/ic_edit"/>
+    <item
+        android:id="@+id/nav_template"
+        android:title="模板"
+        android:icon="@drawable/ic_template"/>
+    <item
+        android:id="@+id/nav_mine"
+        android:title="我的"
+        android:icon="@drawable/ic_mine"/>
+</menu>

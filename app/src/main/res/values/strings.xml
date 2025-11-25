@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Photo</string>
+    <string name="photo_item">相册图片</string>
+</resources>

@@ -1,0 +1,9 @@
+<!-- 若暂无实际图片，用渐变Banner占位 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#FFD6E0"
+        android:endColor="#C8B6FF"
+        android:angle="135"/>
+    <!-- 可添加文字，或直接替换为@drawable/实际图片 -->
+</shape>

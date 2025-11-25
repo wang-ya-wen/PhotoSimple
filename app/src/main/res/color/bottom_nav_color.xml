@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="#76EE00" android:state_checked="true"/> <!-- 选中时荧光绿 -->
+    <item android:color="#6B7280" android:state_checked="false"/> <!-- 未选中时灰色 -->
+</selector>

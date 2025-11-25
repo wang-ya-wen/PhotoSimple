@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F3F4F6"
+    android:orientation="vertical">
+
+    <!-- 轮播图区域：固定高度200dp -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:id="@+id/indicatorContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="10dp"
+            android:gravity="center"
+            android:orientation="horizontal" />
+    </RelativeLayout>
+
+    <!-- 按钮容器：固定高度wrap_content -->
+    <LinearLayout
+        android:id="@+id/ll_button_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="16dp">
+
+        <Button
+            android:id="@+id/btnImportPhoto"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="导入照片"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_black_round"
+            android:drawableStart="@drawable/ic_add_photo"
+            android:drawablePadding="8dp"
+            android:layout_marginEnd="12dp"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <Button
+            android:id="@+id/btn_camera"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="相机"
+            android:textSize="18sp"
+            android:textColor="#111827"
+            android:background="@drawable/btn_green_round"
+            android:drawableStart="@drawable/ic_camera"
+            android:drawablePadding="8dp"
+            android:clickable="true"
+            android:focusable="true"/>
+    </LinearLayout>
+
+    <!-- 功能列表：wrap_content -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_features"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp" />
+
+    <!-- 推荐标题 -->
+    <TextView
+        android:id="@+id/tv_recommend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="为你推荐"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#111827"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp" />
+
+    <!-- 横向滚动推荐区 -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/recommendContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:gravity="start"/>
+    </HorizontalScrollView>
+
+    <!-- 模板列表：设置权重1，占据剩余空间（关键！） -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_templates"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+    android:layout_weight="1"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="8dp" />
+
+    <!-- 底部导航栏：固定在屏幕底部，适配虚拟导航栏 -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/menu_bottom"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color"
+        android:paddingBottom="10dp"
+    android:background="#FFFFFF"/>
+
+</LinearLayout>
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<LinearLayout-->
+<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    android:background="#F3F4F6"-->
+<!--    android:orientation="vertical">-->
+
+<!--    <RelativeLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="200dp">-->
+
+<!--        &lt;!&ndash; ViewPager2 用于实现轮播 &ndash;&gt;-->
+<!--        <androidx.viewpager2.widget.ViewPager2-->
+<!--            android:id="@+id/viewPager"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent" />-->
+
+<!--        &lt;!&ndash; 指示器容器（底部小点） &ndash;&gt;-->
+<!--        <LinearLayout-->
+<!--            android:id="@+id/indicatorContainer"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignParentBottom="true"-->
+<!--            android:layout_marginBottom="10dp"-->
+<!--            android:gravity="center"-->
+<!--            android:orientation="horizontal" />-->
+<!--    </RelativeLayout>-->
+
+<!--    <LinearLayout-->
+<!--        android:id="@+id/ll_button_container"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:gravity="center"-->
+<!--        android:paddingHorizontal="24dp"-->
+<!--        android:paddingVertical="16dp">-->
+
+<!--        <Button-->
+<!--            android:id="@+id/btnImportPhoto"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="60dp"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="导入照片"-->
+<!--            android:textSize="18sp"-->
+<!--            android:textColor="#FFFFFF"-->
+<!--            android:background="@drawable/btn_black_round"-->
+<!--            android:drawableStart="@drawable/ic_add_photo"-->
+<!--            android:drawablePadding="8dp"-->
+<!--            android:layout_marginEnd="12dp"-->
+<!--            android:clickable="true"-->
+<!--            android:focusable="true"/>-->
+
+<!--        <Button-->
+<!--            android:id="@+id/btn_camera"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="60dp"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="相机"-->
+<!--            android:textSize="18sp"-->
+<!--            android:textColor="#111827"-->
+<!--            android:background="@drawable/btn_green_round"-->
+<!--            android:drawableStart="@drawable/ic_camera"-->
+<!--            android:drawablePadding="8dp"-->
+<!--            android:clickable="true"-->
+<!--            android:focusable="true"/>-->
+<!--    </LinearLayout>-->
+
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/rv_features"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:paddingHorizontal="16dp"-->
+<!--        android:paddingVertical="8dp" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/tv_recommend"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="为你推荐"-->
+<!--        android:textSize="18sp"-->
+<!--        android:textStyle="bold"-->
+<!--        android:textColor="#111827"-->
+<!--        android:layout_marginStart="24dp"-->
+<!--        android:layout_marginTop="16dp" />-->
+
+<!--    <HorizontalScrollView-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="12dp"-->
+<!--        android:overScrollMode="never"-->
+<!--        android:scrollbars="none">-->
+
+<!--        &lt;!&ndash; 仅添加padding和gravity，移除space属性，后续代码设置间距 &ndash;&gt;-->
+<!--        <LinearLayout-->
+<!--            android:id="@+id/recommendContainer"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:paddingHorizontal="16dp"-->
+<!--            android:gravity="start"/>-->
+<!--    </HorizontalScrollView>-->
+
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/rv_templates"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="180dp"-->
+<!--        android:paddingHorizontal="16dp"-->
+<!--        android:paddingVertical="8dp" />-->
+<!--    <RelativeLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
+<!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
+<!--        android:id="@+id/bottom_nav"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:menu="@menu/menu_bottom"-->
+<!--        app:itemIconTint="@color/bottom_nav_color"-->
+<!--        app:itemTextColor="@color/bottom_nav_color"-->
+<!--        android:layout_alignParentBottom="true"/>-->
+<!--    </RelativeLayout>-->
+<!--</LinearLayout>-->
