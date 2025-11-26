@@ -83,7 +83,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 
-//11.21
+//author wangyawen 2025-11-21
 class AlbumActivity : AppCompatActivity() {
     // ViewBinding
     private lateinit var binding: ActivityAlbumBinding
@@ -277,9 +277,9 @@ class AlbumActivity : AppCompatActivity() {
                 // 第一页添加本地drawable图片
                 if (page == 0) {
                     val internalPhotos = listOf(
-                        PhotoItem(1, "drawable://${R.drawable.photo1}", false, null, true),
-                        PhotoItem(2, "drawable://${R.drawable.photo2}", false, null, true),
-                        PhotoItem(3, "drawable://${R.drawable.photo3}", false, null, true)
+                        PhotoItem(System.currentTimeMillis(), "drawable://${R.drawable.photo1}", false, null, true),
+                        PhotoItem(System.currentTimeMillis() + 1, "drawable://${R.drawable.photo2}", false, null, true),
+                        PhotoItem(System.currentTimeMillis() + 2, "drawable://${R.drawable.photo3}", false, null, true)
                     )
                     pageData.addAll(internalPhotos)
                 }
@@ -330,6 +330,14 @@ class AlbumActivity : AppCompatActivity() {
                     binding.pbLoading.visibility = View.GONE
                     if (!hasMoreData) {
                         binding.tvNoMoreData.visibility = View.VISIBLE
+                    }
+                    // 新增：空数据判断
+                    if (mediaList.isEmpty()) {
+                        binding.tvEmpty.visibility = View.VISIBLE
+                        binding.rvPhotos.visibility = View.GONE
+                    } else {
+                        binding.tvEmpty.visibility = View.GONE
+                        binding.rvPhotos.visibility = View.VISIBLE
                     }
                 }
 
@@ -402,29 +410,44 @@ class AlbumActivity : AppCompatActivity() {
      */
     private fun saveCroppedImageToMediaStore(croppedUri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
-            contentResolver.openInputStream(croppedUri)?.use { inputStream: InputStream ->
-                val contentValues = ContentValues().apply {
-                    put(MediaStore.Images.Media.DISPLAY_NAME, "crop_${System.currentTimeMillis()}.jpg")
-                    put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-                    put(MediaStore.Images.Media.SIZE, inputStream.available().toLong())
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/CropImages")
+            try {
+                contentResolver.openInputStream(croppedUri)?.use { inputStream ->
+                    // 计算文件大小（避免available()返回0）
+                    val fileSize = inputStream.readBytes().size.toLong()
+                    val contentValues = ContentValues().apply {
+                        put(MediaStore.Images.Media.DISPLAY_NAME, "crop_${System.currentTimeMillis()}.jpg")
+                        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                        put(MediaStore.Images.Media.SIZE, fileSize)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/CropImages")
+                            put(MediaStore.Images.Media.IS_PENDING, 1) // 标记为待处理
+                        }
+                    }
+
+                    val newUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                    newUri?.let {
+                        contentResolver.openOutputStream(it)?.use { outputStream ->
+                            inputStream.reset() // 重置输入流（因为之前readBytes()已读取）
+                            inputStream.copyTo(outputStream)
+                        }
+                        // 取消待处理标记（Android 10+）
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            contentValues.clear()
+                            contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+                            contentResolver.update(newUri, contentValues, null, null)
+                        }
+                        sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri))
+                        Log.d(TAG, "裁剪图片保存到媒体库成功：$newUri")
                     }
                 }
-
-                // 插入到媒体库
-                val newUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-                newUri?.let {
-                    contentResolver.openOutputStream(it)?.use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
-                    // 通知系统扫描新文件
-                    sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri))
+            } catch (e: Exception) {
+                Log.e(TAG, "保存裁剪图片失败：${e.message}", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@AlbumActivity, "保存裁剪图片失败", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
-
     /**
      * 销毁时释放资源（核心：防止内存泄漏）
      */
@@ -440,431 +463,3 @@ class AlbumActivity : AppCompatActivity() {
         binding.rvPhotos.adapter = null
     }
 }
-//class AlbumActivity : AppCompatActivity() {
-//    private lateinit var broadcastReceiver: BroadcastReceiver
-//    private lateinit var binding: ActivityAlbumBinding
-//    private val REQUEST_PERMISSION = 100
-//    private val mediaList = mutableListOf<PhotoItem>()
-//    private var selectedUri: Uri? = null
-//    private var photoAdapter: PhotoAdapter? = null // 全局适配器变量
-//    private val cropResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-//        if (result.resultCode == RESULT_OK) {
-//            val data = result.data
-//            val croppedUri = UCrop.getOutput(data!!) ?: return@registerForActivityResult
-//
-//            // 步骤1：手动将新图片添加到列表开头（立即显示）
-//            val newPhotoItem = PhotoItem(
-//                id = System.currentTimeMillis(),
-//                uri = croppedUri.toString(),
-//                isVideo = false,
-//                thumbnailUri = null
-//            )
-//            mediaList.add(0, newPhotoItem)
-//            photoAdapter?.notifyItemInserted(0) // 局部刷新，性能更好
-//
-//            // 步骤2：保存到媒体库并刷新（确保后续查询能获取）
-//            saveCroppedImageToMediaStore(croppedUri)
-//            lifecycleScope.launch(Dispatchers.Main) {
-//                delay(300)
-//                refreshMediaFromDevice()
-//            }
-//            Toast.makeText(this, "裁剪成功", Toast.LENGTH_SHORT).show()
-//        }
-//
-//    }
-//    // AlbumActivity中启动PhotoPreviewActivity时，用registerForActivityResult
-//    private val previewResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-//        if (result.resultCode == RESULT_OK && result.data?.getBooleanExtra("need_refresh", false) == true) {
-//            refreshMediaFromDevice() // 收到通知后刷新
-//        }
-//    }
-//
-//    // 启动PhotoPreviewActivity的地方
-//    private fun startPreview(uri: String) {
-//        val intent = Intent(this, PhotoPreviewActivity::class.java)
-//        intent.putExtra("image_uri", uri)
-//        previewResultLauncher.launch(intent)
-//    }
-//    companion object {
-//        const val REQUEST_CROP = 101
-//    }
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        binding = ActivityAlbumBinding.inflate(layoutInflater)
-//        setContentView(binding.root)
-//
-//        // 初始化适配器（仅创建一次）
-//        photoAdapter = PhotoAdapter(
-//            mediaList,
-//            activity = this,
-//            onImageSelected = { uri ->
-//                selectedUri = uri
-//                binding.btnEdit.visibility = View.VISIBLE
-//            }
-//        )
-//        // 设置RecyclerView
-//        binding.rvPhotos.layoutManager = GridLayoutManager(this, 3)
-//        binding.rvPhotos.adapter = photoAdapter
-//
-//        // 检查权限
-//        if (checkPermission()) {
-//            refreshMediaFromDevice()
-//        } else {
-//            requestPermission()
-//        }
-//
-//        // 编辑按钮点击事件
-//        binding.btnEdit.setOnClickListener {
-//            selectedUri?.let { uri ->
-//                startCrop(uri)
-//            }
-//        }
-//        broadcastReceiver = object : BroadcastReceiver() {
-//            override fun onReceive(context: Context?, intent: Intent?) {
-//                if (intent?.action == "MEDIA_CHANGED") {
-//                    refreshMediaFromDevice() // 收到通知后立即刷新
-//                }
-//            }
-//        }
-//        LocalBroadcastManager.getInstance(this)
-//            .registerReceiver(broadcastReceiver, IntentFilter("MEDIA_CHANGED"))
-//    }
-//
-//    override fun onDestroy() {
-//        super.onDestroy()
-//        // 销毁时取消注册，避免内存泄漏
-//        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
-//    }
-//
-//    // 启动裁剪的方法
-////    private fun startCrop(sourceUri: Uri) {
-////        val destFile = File(cacheDir, "crop_${System.currentTimeMillis()}.jpg")
-////        val destUri = Uri.fromFile(destFile)
-////
-////        UCrop.of(sourceUri, destUri)
-////            .withAspectRatio(1f, 1f)
-////            .withMaxResultSize(1920, 1920)
-////            .start(this, REQUEST_CROP)
-////    }
-//    private fun startCrop(sourceUri: Uri) {
-//        val destFile = File(cacheDir, "crop_${System.currentTimeMillis()}.jpg")
-//        val destUri = Uri.fromFile(destFile)
-//
-//        val cropIntent = UCrop.of(sourceUri, destUri)
-//            .withAspectRatio(1f, 1f)
-//            .withMaxResultSize(1920, 1920)
-//            .getIntent(this)
-//
-//        // 用新的回调启动裁剪，替代start(this, REQUEST_CROP)
-//        cropResultLauncher.launch(cropIntent)
-//    }
-//    // 替换原loadMediaFromDevice，改为可重复调用的刷新方法
-//    fun refreshMediaFromDevice() {
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            mediaList.clear() // 清空旧数据
-//
-//            // 步骤1：添加内部drawable图片
-//            val internalPhotos = listOf(
-//                PhotoItem(1, "drawable://${R.drawable.photo1}", isVideo = false, null),
-//                PhotoItem(2, "drawable://${R.drawable.photo2}", isVideo = false, null),
-//                PhotoItem(3, "drawable://${R.drawable.photo3}", isVideo = false, null)
-//            )
-//            mediaList.addAll(internalPhotos)
-//
-//            // 步骤2：查询设备媒体库图片
-//            val projection = arrayOf(MediaStore.Images.Media._ID)
-//            contentResolver.query(
-//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                projection,
-//                null,
-//                null,
-//                "${MediaStore.Images.Media.DATE_ADDED} DESC"
-//            )?.use { cursor ->
-//                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-//                while (cursor.moveToNext()) {
-//                    val id = cursor.getLong(idColumn)
-//                    val mediaUri = Uri.withAppendedPath(
-//                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                        id.toString()
-//                    ).toString()
-//                    mediaList.add(PhotoItem(id + 3, mediaUri, isVideo = false, null))
-//                }
-//            }
-//
-//            // 更新UI
-//            withContext(Dispatchers.Main) {
-//                Log.d("AlbumDebug", "刷新后媒体数量：${mediaList.size}")
-//                photoAdapter?.notifyDataSetChanged() // 通知适配器刷新
-//                if (mediaList.isEmpty()) {
-//                    Toast.makeText(this@AlbumActivity, "暂无图片数据", Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//        }
-//    }
-//
-//    // 权限回调中调用刷新
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        if (requestCode == REQUEST_PERMISSION && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-//            refreshMediaFromDevice() // 替换原loadMediaFromDevice
-//        }
-//    }
-//
-//
-//    // 检查存储权限
-//    private fun checkPermission(): Boolean {
-//        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//            // Android 13+：分别检查图片和视频权限
-//            ContextCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.READ_MEDIA_IMAGES
-//            ) == PackageManager.PERMISSION_GRANTED
-//                    && ContextCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.READ_MEDIA_VIDEO
-//            ) == PackageManager.PERMISSION_GRANTED
-//        } else {
-//            // Android 12及以下：读取外部存储权限
-//            ContextCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.READ_EXTERNAL_STORAGE
-//            ) == PackageManager.PERMISSION_GRANTED
-//        }
-//    }
-//
-////    // 申请权限
-//    private fun requestPermission() {
-//        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//            arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
-//        } else {
-//            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-//        }
-//        ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION)
-//    }
-//    // 补充：将裁剪后的图片写入媒体库（确保能被查询到）
-////    private fun saveCroppedImageToMediaStore(croppedUri: Uri) {
-////        contentResolver.openInputStream(croppedUri)?.use { inputStream ->
-////            val contentValues = android.content.ContentValues().apply {
-////                put(MediaStore.Images.Media.DISPLAY_NAME, "crop_${System.currentTimeMillis()}.jpg")
-////                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-////                put(MediaStore.Images.Media.SIZE, inputStream.available().toLong())
-////            }
-////            val newUri =
-////                contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-////            newUri?.let {
-////                contentResolver.openOutputStream(it)?.use { outputStream ->
-////                    inputStream.copyTo(outputStream)
-////                }
-////            }
-////        }
-////    }
-//    private fun saveCroppedImageToMediaStore(croppedUri: Uri) {
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            contentResolver.openInputStream(croppedUri)?.use { inputStream ->
-//                val contentValues = ContentValues().apply {
-//                    put(MediaStore.Images.Media.DISPLAY_NAME, "crop_${System.currentTimeMillis()}.jpg")
-//                    put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-//                    put(MediaStore.Images.Media.SIZE, inputStream.available().toLong())
-//                    // Android 10+ 必须指定RELATIVE_PATH
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                        put(MediaStore.Images.Media.RELATIVE_PATH, "DCIM/CropImages")
-//                    }
-//                }
-//
-//                // 插入媒体库并获取新Uri
-//                val newUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-//                newUri?.let {
-//                    contentResolver.openOutputStream(it)?.use { outputStream ->
-//                        inputStream.copyTo(outputStream)
-//                    }
-//                    // 强制通知系统扫描新文件（关键：确保媒体库立即更新）
-//                    sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, newUri))
-//                }
-//            }
-//        }
-//    }
-//
-//}
-
-//// 1. 定义裁剪请求码
-//private const val REQUEST_CROP = 101
-//class AlbumActivity : AppCompatActivity() {
-//    private lateinit var binding: ActivityAlbumBinding
-//    private val REQUEST_PERMISSION = 100
-//    private val mediaList = mutableListOf<PhotoItem>()
-//    private var selectedUri: Uri? = null
-//    companion object {
-//        const val REQUEST_CROP = 101 // 定义静态请求码
-//    }
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        binding = ActivityAlbumBinding.inflate(layoutInflater)
-//        setContentView(binding.root)
-//
-//        // 关键：先设置空Adapter，避免RecyclerView跳过布局
-//        binding.rvPhotos.adapter = PhotoAdapter(
-//            mediaList,
-//            activity = this@AlbumActivity,
-//            onImageSelected = { uri -> // 补充选中回调逻辑
-//                selectedUri = uri
-//                binding.btnEdit.visibility = View.VISIBLE })
-//        binding.rvPhotos.layoutManager = GridLayoutManager(this, 3) // 手动设置网格布局（替代XML）
-//
-//        // 检查权限，无则申请
-//        if (checkPermission()) {
-//            loadMediaFromDevice()
-//        } else {
-//            requestPermission()
-//        }
-//        // 2. 初始化Adapter时使用该变量
-//        val adapter = PhotoAdapter(mediaList, activity = this) { uri ->
-//            selectedUri = uri
-//            binding.btnEdit.visibility = View.VISIBLE
-//        }
-//        binding.rvPhotos.adapter = adapter
-//
-//        // 3. 编辑按钮点击事件中使用
-//        binding.btnEdit.setOnClickListener {
-//            selectedUri?.let { uri ->
-//                startCrop(uri)
-//            }
-//        }
-//    }
-//    // 启动裁剪的方法
-//    private fun startCrop(sourceUri: Uri) {
-//        val destFile = File(cacheDir, "crop_${System.currentTimeMillis()}.jpg")
-//        val destUri = Uri.fromFile(destFile)
-//
-//        UCrop.of(sourceUri, destUri)
-//            .withAspectRatio(1f, 1f)
-//            .withMaxResultSize(1920, 1920)
-//            .start(this, REQUEST_CROP)
-//    }
-//    // 检查存储权限
-//    private fun checkPermission(): Boolean {
-//        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//            // Android 13+：分别检查图片和视频权限
-//            ContextCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.READ_MEDIA_IMAGES
-//            ) == PackageManager.PERMISSION_GRANTED
-//                    && ContextCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.READ_MEDIA_VIDEO
-//            ) == PackageManager.PERMISSION_GRANTED
-//        } else {
-//            // Android 12及以下：读取外部存储权限
-//            ContextCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.READ_EXTERNAL_STORAGE
-//            ) == PackageManager.PERMISSION_GRANTED
-//        }
-//    }
-//
-//    // 申请权限
-//    private fun requestPermission() {
-//        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//            arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
-//        } else {
-//            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-//        }
-//        ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION)
-//    }
-//
-//    // 权限回调
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        if (requestCode == REQUEST_PERMISSION && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-//            loadMediaFromDevice()
-//        }
-//    }
-//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        super.onActivityResult(requestCode, resultCode, data)
-//        if (requestCode == REQUEST_CROP && resultCode == RESULT_OK) {
-//            // 获取裁剪后的图片Uri
-//            val croppedUri = UCrop.getOutput(data!!) ?: return
-//            // 更新列表（将裁剪后的Uri替换原图片）
-//            updateMediaListWithCroppedUri(croppedUri)
-//            // 刷新Adapter
-//            binding.rvPhotos.adapter?.notifyDataSetChanged()
-//            Toast.makeText(this, "裁剪成功", Toast.LENGTH_SHORT).show()
-//        } else if (resultCode == UCrop.RESULT_ERROR) {
-//            // 裁剪失败
-//            val error = UCrop.getError(data!!)
-//            Toast.makeText(this, "裁剪失败：${error?.message}", Toast.LENGTH_SHORT).show()
-//        }
-//    }
-//    //更新媒体列表
-//    private fun updateMediaListWithCroppedUri(croppedUri: Uri) {
-//        // 示例：将裁剪后的图片添加到列表开头
-//        mediaList.add(0, PhotoItem(
-//            id = System.currentTimeMillis(),
-//            uri = croppedUri.toString(),
-//            isVideo = false,
-//            thumbnailUri = null
-//        ))
-//    }
-//
-//
-//
-//    // 异步拉取设备图片和视频
-//    private fun loadMediaFromDevice() {
-//        lifecycleScope.launch(Dispatchers.IO) {
-//            // 步骤1：先添加App内部的drawable图片（恢复之前的测试图片）
-//            val internalPhotos = listOf(
-//                PhotoItem(1, "drawable://${R.drawable.photo1}", isVideo = false, null),
-//                PhotoItem(2, "drawable://${R.drawable.photo2}", isVideo = false, null),
-//                PhotoItem(3, "drawable://${R.drawable.photo3}", isVideo = false, null)
-//            )
-//            mediaList.addAll(internalPhotos)
-//
-//            // 步骤2：再查询设备媒体库图片（保留之前的查询逻辑）
-//            val projection = arrayOf(MediaStore.Images.Media._ID)
-//            contentResolver.query(
-//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                projection,
-//                null,
-//                null,
-//                "${MediaStore.Images.Media.DATE_ADDED} DESC"
-//            )?.use { cursor ->
-//                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-//                while (cursor.moveToNext()) {
-//                    val id = cursor.getLong(idColumn)
-//                    val mediaUri = Uri.withAppendedPath(
-//                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                        id.toString()
-//                    ).toString()
-//                    mediaList.add(PhotoItem(id + 3, mediaUri, isVideo = false, null))
-//                }
-//            }
-//
-//            // 数据加载完成后，替换Adapter的数据源并刷新
-//            withContext(Dispatchers.Main) {
-//                Log.d("AlbumDebug", "最终加载的媒体数量：${mediaList.size}")
-//                val currentActivity = this@AlbumActivity
-//                val newAdapter = PhotoAdapter(
-//                    mediaList,
-//                    activity = currentActivity,
-//                    onImageSelected = { uri -> // 补充选中回调
-//                        selectedUri = uri
-//                        binding.btnEdit.visibility = View.VISIBLE
-//                    }
-//                )
-//                binding.rvPhotos.adapter = newAdapter
-//                newAdapter.notifyDataSetChanged() // 强制刷新
-//                if (mediaList.isEmpty()) {
-//                    Toast.makeText(this@AlbumActivity, "暂无图片数据", Toast.LENGTH_SHORT).show()
-//                }
-//            }
-//        }
-//    }
-//}

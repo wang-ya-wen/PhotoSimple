@@ -198,7 +198,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_mine -> {
                     Log.d(TAG, "「我的」按钮被点击！准备跳转到MineActivity")
                     startActivity(Intent(this, MineContainerActivity::class.java))
-                    finish()
+//                    finish()
                     true
                 }
                 R.id.nav_edit -> {
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_template -> {
                     Log.d(TAG, "「模板」按钮被点击！可在此处添加模板页面跳转逻辑")
                     startActivity(Intent(this, templateActivity::class.java))
-                    finish()
+//                    finish()
                     true
                 }
                 else -> {
