@@ -1,65 +1,16 @@
 package com.example.Photo
-
 import PhotoItem
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.Photo.adapter.PhotoAdapter
 import com.example.Photo.databinding.ActivityAlbumBinding
-
-//class AlbumActivity : AppCompatActivity() {
-//    private lateinit var binding: ActivityAlbumBinding
-
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        // 初始化ViewBinding（确保已启用ViewBinding）
-//        binding = ActivityAlbumBinding.inflate(layoutInflater)
-//        setContentView(binding.root)
-//
-//        // 1. 设置RecyclerView的布局管理器（线性布局，垂直方向）
-//        binding.rvPhotos.layoutManager = LinearLayoutManager(this)
-//
-//        // 2. 准备测试数据（替换为你的实际图片资源）
-//        val testPhotos = listOf(
-//            PhotoItem(imageRes = R.drawable.photo1),  // 确保drawable中有这些图片
-//            PhotoItem(imageRes = R.drawable.photo2),
-//            PhotoItem(imageRes = R.drawable.photo3)
-//        )
-//
-//        // 3. 创建Adapter并绑定到RecyclerView
-//        val adapter = PhotoAdapter(testPhotos)
-//        binding.rvPhotos.adapter = adapter2025-11-19 10:52:29.530  8058-8079  HostConnection          com.example.Photo                    D  HostConnection::get() New Host Connection established 0xf47aa2b0, tid 8079
-
-//}
-//class AlbumActivity : AppCompatActivity() {
-//    private lateinit var recyclerView: RecyclerView  // 直接声明RecyclerView
-//
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContentView(R.layout.activity_album)  // 直接加载布局
-//
-//        // 用findViewById获取RecyclerView
-//        recyclerView = findViewById(R.id.rvPhotos)
-//        // 设置LayoutManager
-//        recyclerView.layoutManager = LinearLayoutManager(this)
-//
-//        // 准备数据+设置Adapter
-//        val testPhotos = listOf(
-//            PhotoItem(imageRes = R.drawable.photo1),
-//            PhotoItem(imageRes = R.drawable.photo2),
-//            PhotoItem(imageRes = R.drawable.photo3)
-//        )
-//        recyclerView.adapter = PhotoAdapter(testPhotos)
-//    }
-//}
 import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
@@ -70,18 +21,15 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.InputStream
 
 //author wangyawen 2025-11-21
 class AlbumActivity : AppCompatActivity() {
