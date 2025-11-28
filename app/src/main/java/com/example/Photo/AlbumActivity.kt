@@ -318,7 +318,8 @@ class AlbumActivity : AppCompatActivity() {
      */
     private fun startPreview(uri: String) {
         val intent = Intent(this, PhotoPreviewActivity::class.java)
-        intent.putExtra("imageUri", uri)
+//        intent.putExtra("imageUri", uri)
+        intent.putExtra(PhotoPreviewActivity.EXTRA_IMAGE_URI, uri)
         previewResultLauncher.launch(intent)
     }
 

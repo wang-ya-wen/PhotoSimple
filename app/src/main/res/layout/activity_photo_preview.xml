@@ -1,18 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- 预览图片 -->
+    <!-- 预览图片（支持手势缩放平移） -->
     <ImageView
         android:id="@+id/ivPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitCenter"/>
+        android:adjustViewBounds="true"
+        android:scaleType="matrix"
+        tools:src="@drawable/photo1" />
 
-    <!-- 编辑按钮：直接在XML中添加，层级高于ImageView -->
+    <!-- 关闭按钮 -->
+    <ImageView
+        android:id="@+id/ivClose"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        app:tint="#FFFFFF" />
+
+    <!-- 裁剪比例选择容器 -->
+    <LinearLayout
+        android:id="@+id/llRatioContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:spacing="8dp">
+        <!-- 动态添加裁剪比例按钮 -->
+    </LinearLayout>
+
+    <!-- 编辑按钮：右上角 -->
     <Button
         android:id="@+id/btnEdit"
         android:layout_width="wrap_content"
@@ -22,9 +46,9 @@
         android:layout_marginRight="20dp"
         android:background="@android:color/transparent"
         android:text="编辑"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/white" />
 
-    <!-- 导入图片按钮：直接在XML中添加，层级高于ImageView -->
+    <!-- 导入图片按钮：右上角（编辑按钮下方） -->
     <Button
         android:id="@+id/btnImport"
         android:layout_width="wrap_content"
@@ -34,6 +58,74 @@
         android:layout_marginRight="20dp"
         android:background="@android:color/transparent"
         android:text="导入图片"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/white" />
 
-</FrameLayout>
+    <!-- Undo/Redo按钮栏：页面最底部（核心修改） -->
+    <LinearLayout
+        android:id="@+id/llHistoryButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+    android:layout_marginBottom="16dp"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingHorizontal="16dp"
+    android:spacing="16dp"> <!-- 按钮之间的间距 -->
+
+    <!-- 撤销按钮：移除颜色属性，使用默认样式 -->
+    <Button
+        android:id="@+id/btnUndo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="撤销" />
+
+    <!-- 恢复按钮：移除颜色属性，使用默认样式 -->
+    <Button
+        android:id="@+id/btnRedo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="恢复" />
+
+</LinearLayout>
+
+    </FrameLayout>
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    android:background="#000000">-->
+
+<!--    &lt;!&ndash; 预览图片 &ndash;&gt;-->
+<!--    <ImageView-->
+<!--        android:id="@+id/ivPreview"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:scaleType="fitCenter"/>-->
+<!--    -->
+<!--    &lt;!&ndash; 编辑按钮：直接在XML中添加，层级高于ImageView &ndash;&gt;-->
+<!--    <Button-->
+<!--        android:id="@+id/btnEdit"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="top|right"-->
+<!--        android:layout_marginTop="40dp"-->
+<!--        android:layout_marginRight="20dp"-->
+<!--        android:background="@android:color/transparent"-->
+<!--        android:text="编辑"-->
+<!--        android:textColor="@android:color/white"/>-->
+
+<!--    &lt;!&ndash; 导入图片按钮：直接在XML中添加，层级高于ImageView &ndash;&gt;-->
+<!--    <Button-->
+<!--        android:id="@+id/btnImport"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="top|right"-->
+<!--        android:layout_marginTop="100dp"-->
+<!--        android:layout_marginRight="20dp"-->
+<!--        android:background="@android:color/transparent"-->
+<!--        android:text="导入图片"-->
+<!--        android:textColor="@android:color/white"/>-->
+<!--    -->
+<!--</FrameLayout>-->
